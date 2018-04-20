@@ -129,7 +129,7 @@ func Test() error {
 
 		count++
 
-		if strings.HasPrefix(strings.ToLower(keyInfo.Address), "123mg") {
+		if strings.HasPrefix(strings.ToLower(keyInfo.Address), "1") {
 			keyInfo.Detail()
 			fmt.Printf("cost %v runs\n", count)
 			elapse := time.Now().Sub(start)
