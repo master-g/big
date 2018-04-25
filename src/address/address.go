@@ -22,7 +22,7 @@ type KeyInfo struct {
 	sha256hash4  [32]byte // 5
 	sha256hash5  [32]byte // 6
 	first4bytes6 []byte   // 7
-	step8        []byte   // 8
+	step8        []byte   //
 	Address      string
 }
 
