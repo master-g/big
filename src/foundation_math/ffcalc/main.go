@@ -35,10 +35,6 @@ func main() {
 	} else {
 		expression = os.Args[2]
 	}
-	e, err := calc.NewExpression(expression)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	fmt.Println(e)
+	calc.Parse(expression)
+
 }
