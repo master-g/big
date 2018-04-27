@@ -104,14 +104,60 @@ func preprocess(s string) string {
 	s = sb.String()
 
 	// process negative numbers
-	for i, b := range s {
-		c := string(b)
-		if c == "-" {
-			// TODO:
-			// 1--2 -> 1-(0-2) 			a. operator before '-'
-			// 2*-(3+4) -> 2*(0-(3+4)) 	b. '(' after '-'
-		}
-	}
+
+	// TODO:
+	// 1--2 -> 1-(0-2) 			a. operator before '-'
+	// 2*-(3+4) -> 2*(0-(3+4)) 	b. '(' after '-'
+
+	//const (
+	//	operatorCharset = "+-*/%^"
+	//)
+	//
+	//func findNextOperator(r []rune, start int) int {
+	//	for i := start; i < len(r); i++ {
+	//	b := r[i]
+	//	if !unicode.IsDigit(b) {
+	//	return i
+	//}
+	//}
+	//	return len(r)
+	//}
+	//
+	//func main() {
+	//	a := "-1--2*-(3+4)"
+	//	//var sb strings.Builder
+	//	runes := []rune(a)
+	//	i := 0
+	//	for {
+	//		if i >= len(runes) {
+	//			break
+	//		}
+	//		r := runes[i]
+	//		c := string(r)
+	//		if c == "-" {
+	//			var prev, next string
+	//			if i > 0 {
+	//				prev = string(runes[i-1])
+	//			}
+	//			if i < len(runes)-2 {
+	//				next = string(runes[i+1])
+	//			}
+	//			if i == 0 || strings.Index(operatorCharset, prev) != -1 && next != "(" {
+	//				runes = append(runes[:i], append([]rune("(0"), runes[i:]...)...)
+	//				i += 2
+	//				pos := findNextOperator(runes, i+1)
+	//				runes = append(runes[:pos], append([]rune(")"), runes[pos:]...)...)
+	//				i = pos + 2
+	//				continue
+	//			} else if next == "(" {
+	//				// find match )
+	//			}
+	//		}
+	//		i++
+	//	}
+	//	fmt.Println("----------")
+	//	fmt.Println(string(runes))
+	//}
 
 	return s
 }
