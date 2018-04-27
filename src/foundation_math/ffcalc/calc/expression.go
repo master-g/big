@@ -31,6 +31,7 @@ var (
 	}
 )
 
+// Parse expression to reverse polish notation
 func Parse(s string) ([]*Token, error) {
 	tokens, err := tokenize(s)
 	if err != nil {
@@ -48,6 +49,7 @@ func Parse(s string) ([]*Token, error) {
 	return visitor.RPN, nil
 }
 
+// Evaluate the arithmetic value of a reverse polish notation
 func Evaluate(tokens []*Token, order *big.Int) (*big.Int, error) {
 	if len(tokens) == 0 {
 		return nil, ErrorInvalidRPN
@@ -85,14 +87,12 @@ func Evaluate(tokens []*Token, order *big.Int) (*big.Int, error) {
 	return value.Value, nil
 }
 
-func tokenize(s string) ([]*Token, error) {
-	if s == "" {
-		return nil, ErrorInvalidExpression
-	}
-
-	// process space and parenthesis
+func preprocess(s string) string {
 	var sb strings.Builder
+	// remove all spaces
 	s = strings.TrimSpace(s)
+
+	// process parenthesis
 	s = strings.Replace(s, ")(", ")*(", -1)
 	for i, b := range s {
 		c := string(b)
@@ -102,9 +102,30 @@ func tokenize(s string) ([]*Token, error) {
 		sb.WriteRune(b)
 	}
 	s = sb.String()
-	sb.Reset()
+
+	// process negative numbers
+	for i, b := range s {
+		c := string(b)
+		if c == "-" {
+			// TODO:
+			// 1--2 -> 1-(0-2) 			a. operator before '-'
+			// 2*-(3+4) -> 2*(0-(3+4)) 	b. '(' after '-'
+		}
+	}
+
+	return s
+}
+
+func tokenize(s string) ([]*Token, error) {
+	if s == "" {
+		return nil, ErrorInvalidExpression
+	}
+
+	// process space, parenthesis and negative numbers
+	s = preprocess(s)
 
 	// tokenize
+	var sb strings.Builder
 	tokenList := make([]*Token, 0)
 	balance := 0
 	for i, b := range s {
@@ -169,10 +190,16 @@ func makeAbstractSyntaxTree(tokens []*Token) *ASTNode {
 		case TokenLiteral:
 			outStack.Push(NewASTNode(t, nil, nil))
 		case TokenOperator:
-			top := opStack.Peek()
-			for top != nil && top.IsOperator() && (t.Operator.Associativity() == AssociativityLeft && t.Operator.Precedence() <= top.Operator.Precedence()) || (t.Operator.Associativity() == AssociativityRight && t.Operator.Precedence() < top.Operator.Precedence()) {
-				outStack.AddNode(opStack.Pop())
+			var top *Token
+			for {
+				if opStack.Empty() {
+					break
+				}
 				top = opStack.Peek()
+				if top.IsOperator() && (t.Operator.Associativity() == AssociativityLeft && t.Operator.Precedence() <= top.Operator.Precedence()) || (t.Operator.Associativity() == AssociativityRight && t.Operator.Precedence() < top.Operator.Precedence()) {
+					outStack.AddNode(opStack.Pop())
+					top = opStack.Peek()
+				}
 			}
 			opStack.Push(t)
 		case TokenParenthesisLeft:
@@ -194,17 +221,20 @@ func makeAbstractSyntaxTree(tokens []*Token) *ASTNode {
 	return outStack.Pop()
 }
 
-type CalcVisitor struct {
+// RPNVisitor
+type RPNVisitor struct {
 	ASTNodeVisitor
 	RPN []*Token
 }
 
-func NewCalcVisitor() *CalcVisitor {
-	return &CalcVisitor{
+// NewCalcVisitor returns new RPNVisitor
+func NewCalcVisitor() *RPNVisitor {
+	return &RPNVisitor{
 		RPN: make([]*Token, 0),
 	}
 }
 
-func (dv *CalcVisitor) Visit(n *ASTNode) {
+// Visit interface
+func (dv *RPNVisitor) Visit(n *ASTNode) {
 	dv.RPN = append([]*Token{n.Token}, dv.RPN...)
 }
