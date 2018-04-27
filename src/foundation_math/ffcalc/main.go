@@ -35,6 +35,15 @@ func main() {
 	} else {
 		expression = os.Args[2]
 	}
-	calc.Parse(expression)
-
+	rpn, err := calc.Parse(expression)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	result, err := calc.Evaluate(rpn, order)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	fmt.Println(result)
 }

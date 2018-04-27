@@ -15,6 +15,20 @@ func NewASTNode(t *Token, left, right *ASTNode) *ASTNode {
 	}
 }
 
+type ASTNodeVisitor interface {
+	Visit(node *ASTNode)
+}
+
+func (n *ASTNode) Accept(visitor ASTNodeVisitor) {
+	visitor.Visit(n)
+	if n.Right != nil {
+		n.Right.Accept(visitor)
+	}
+	if n.Left != nil {
+		n.Left.Accept(visitor)
+	}
+}
+
 type ASTStack []*ASTNode
 
 func NewASTStack() ASTStack {

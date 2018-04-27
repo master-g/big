@@ -2,7 +2,6 @@ package calc
 
 import (
 	"errors"
-	"fmt"
 	"math/big"
 	"strconv"
 	"strings"
@@ -19,30 +18,71 @@ var (
 	// ErrorMismatchedParenthesis indicates there are unmatched parenthesis
 	ErrorMismatchedParenthesis = errors.New("invalid mismatched parenthesis")
 
+	// ErrorInvalidRPN invalid reverse polish notation
+	ErrorInvalidRPN = errors.New("invalid RPN")
+
 	opTypeMap = map[string]Operator{
 		"+": OperatorAdd,
 		"-": OperatorSub,
-		"x": OperatorMul,
+		"*": OperatorMul,
 		"/": OperatorDiv,
 		"%": OperatorMod,
 		"^": OperatorExp,
 	}
 )
 
-func Parse(s string) error {
+func Parse(s string) ([]*Token, error) {
 	tokens, err := tokenize(s)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	ast, err := makeAbstractSyntaxTree(tokens)
-	if err != nil {
-		return err
+	ast := makeAbstractSyntaxTree(tokens)
+	if ast == nil {
+		return nil, ErrorInvalidExpression
 	}
 
-	fmt.Println(ast)
+	visitor := NewCalcVisitor()
+	ast.Accept(visitor)
 
-	return nil
+	return visitor.RPN, nil
+}
+
+func Evaluate(tokens []*Token, order *big.Int) (*big.Int, error) {
+	if len(tokens) == 0 {
+		return nil, ErrorInvalidRPN
+	}
+
+	stack := NewTokenStack()
+	for _, t := range tokens {
+		if t.IsOperator() {
+			token2 := stack.Pop()
+			token1 := stack.Pop()
+			if token1.Type != TokenLiteral || token1.Value == nil || token2.Type != TokenLiteral || token2.Value == nil {
+				return nil, ErrorInvalidRPN
+			}
+			result := t.Operator.Eval(token1.Value, token2.Value)
+			result.Mod(result, order)
+			stack.Push(&Token{
+				origin: result.String(),
+				Type:   TokenLiteral,
+				Value:  result,
+			})
+		} else {
+			stack.Push(t)
+		}
+	}
+
+	value := stack.Pop()
+	if !stack.Empty() {
+		return nil, ErrorInvalidRPN
+	}
+
+	if value.Type != TokenLiteral {
+		return nil, ErrorInvalidRPN
+	}
+
+	return value.Value, nil
 }
 
 func tokenize(s string) ([]*Token, error) {
@@ -50,41 +90,65 @@ func tokenize(s string) ([]*Token, error) {
 		return nil, ErrorInvalidExpression
 	}
 
-	s = strings.TrimSpace(s)
-
+	// process space and parenthesis
 	var sb strings.Builder
+	s = strings.TrimSpace(s)
+	s = strings.Replace(s, ")(", ")*(", -1)
+	for i, b := range s {
+		c := string(b)
+		if c == "(" && i != 0 && unicode.IsDigit([]rune(s)[i-1]) {
+			sb.WriteString("*")
+		}
+		sb.WriteRune(b)
+	}
+	s = sb.String()
+	sb.Reset()
+
+	// tokenize
 	tokenList := make([]*Token, 0)
 	balance := 0
-	for _, b := range s {
+	for i, b := range s {
 		c := string(b)
-		token := &Token{}
 		if unicode.IsDigit(b) {
 			sb.WriteRune(b)
-			continue
-		} else if sb.Len() != 0 {
-			token.origin = sb.String()
-			v, _ := strconv.ParseInt(token.origin, 10, 64)
-			token.Type = TokenLiteral
-			token.Value = big.NewInt(v)
-			tokenList = append(tokenList, token)
-			sb.Reset()
+			if i < len(s)-1 {
+				continue
+			}
 		}
 
-		token.origin = c
+		if sb.Len() != 0 {
+			origin := sb.String()
+			v, _ := strconv.ParseInt(origin, 10, 64)
+			token := &Token{
+				origin: origin,
+				Type:   TokenLiteral,
+				Value:  big.NewInt(v),
+			}
+			tokenList = append(tokenList, token)
+			sb.Reset()
 
+			if unicode.IsDigit(b) {
+				continue
+			}
+		}
+
+		token := &Token{origin: c}
 		if c == "(" {
 			token.Type = TokenParenthesisLeft
 			balance++
+			tokenList = append(tokenList, token)
 			continue
 		} else if c == ")" {
 			token.Type = TokenParenthesisRight
 			balance--
+			tokenList = append(tokenList, token)
 			continue
 		}
 
 		if opType, ok := opTypeMap[c]; ok {
 			token.Type = TokenOperator
 			token.Operator = opType
+			tokenList = append(tokenList, token)
 		} else {
 			return nil, ErrorInvalidCharacter
 		}
@@ -97,7 +161,7 @@ func tokenize(s string) ([]*Token, error) {
 	return tokenList, nil
 }
 
-func makeAbstractSyntaxTree(tokens []*Token) (*ASTNode, error) {
+func makeAbstractSyntaxTree(tokens []*Token) *ASTNode {
 	outStack := NewASTStack()
 	opStack := NewTokenStack()
 	for _, t := range tokens {
@@ -127,5 +191,20 @@ func makeAbstractSyntaxTree(tokens []*Token) (*ASTNode, error) {
 		outStack.AddNode(opStack.Pop())
 	}
 
-	return outStack.Pop(), nil
+	return outStack.Pop()
+}
+
+type CalcVisitor struct {
+	ASTNodeVisitor
+	RPN []*Token
+}
+
+func NewCalcVisitor() *CalcVisitor {
+	return &CalcVisitor{
+		RPN: make([]*Token, 0),
+	}
+}
+
+func (dv *CalcVisitor) Visit(n *ASTNode) {
+	dv.RPN = append([]*Token{n.Token}, dv.RPN...)
 }

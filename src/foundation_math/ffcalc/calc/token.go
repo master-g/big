@@ -40,8 +40,8 @@ func (t *Token) String() string {
 
 type TokenStack []*Token
 
-func NewTokenStack() TokenStack {
-	return TokenStack{}
+func NewTokenStack() *TokenStack {
+	return &TokenStack{}
 }
 
 func (s TokenStack) Empty() bool {

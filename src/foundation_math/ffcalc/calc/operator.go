@@ -1,5 +1,9 @@
 package calc
 
+import (
+	"math/big"
+)
+
 type Operator int
 
 type Associativity int
@@ -42,4 +46,29 @@ func (op Operator) Associativity() Associativity {
 
 func (op Operator) Precedence() int {
 	return opPrecMap[op]
+}
+
+func (op Operator) Eval(operand1, operand2 *big.Int) *big.Int {
+	if operand1 == nil || operand2 == nil {
+		return nil
+	}
+
+	result := big.NewInt(0)
+
+	switch op {
+	case OperatorAdd:
+		result.Add(operand1, operand2)
+	case OperatorSub:
+		result.Sub(operand1, operand2)
+	case OperatorMul:
+		result.Mul(operand1, operand2)
+	case OperatorDiv:
+		result.Div(operand1, operand2)
+	case OperatorMod:
+		result.Mod(operand1, operand2)
+	case OperatorExp:
+		result.Exp(operand1, operand2, nil)
+	}
+
+	return result
 }
