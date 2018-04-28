@@ -3,7 +3,6 @@ package calc
 import (
 	"errors"
 	"math/big"
-	"strconv"
 	"strings"
 	"unicode"
 )
@@ -63,8 +62,7 @@ func Evaluate(tokens []*Token, order *big.Int) (*big.Int, error) {
 			if token1.Type != TokenLiteral || token1.Value == nil || token2.Type != TokenLiteral || token2.Value == nil {
 				return nil, ErrorInvalidRPN
 			}
-			result := t.Operator.Eval(token1.Value, token2.Value)
-			result.Mod(result, order)
+			result := t.Operator.Eval(order, token1.Value, token2.Value)
 			stack.Push(&Token{
 				origin: result.String(),
 				Type:   TokenLiteral,
@@ -84,7 +82,41 @@ func Evaluate(tokens []*Token, order *big.Int) (*big.Int, error) {
 		return nil, ErrorInvalidRPN
 	}
 
-	return value.Value, nil
+	finalResult := value.Value.Mod(value.Value, order)
+	return finalResult, nil
+}
+
+func findNextOperator(r []rune, start int) int {
+	for i := start; i < len(r); i++ {
+		b := r[i]
+		if !unicode.IsDigit(b) {
+			return i
+		}
+	}
+	return len(r)
+}
+
+func findMatchParenthesis(r []rune, start int) int {
+	balance := 1
+	for i := start; i < len(r); i++ {
+		c := string(r[i])
+		if c == "(" {
+			balance++
+		} else if c == ")" {
+			balance--
+		}
+
+		if balance == 0 {
+			return i
+		}
+	}
+
+	return len(r)
+}
+
+func isOperator(s string) bool {
+	_, ok := opTypeMap[s]
+	return ok
 }
 
 func preprocess(s string) string {
@@ -105,61 +137,51 @@ func preprocess(s string) string {
 
 	// process negative numbers
 
-	// TODO:
-	// 1--2 -> 1-(0-2) 			a. operator before '-'
-	// 2*-(3+4) -> 2*(0-(3+4)) 	b. '(' after '-'
+	runes := []rune(s)
+	i := 0
+	for {
+		if i >= len(runes) {
+			break
+		}
+		r := runes[i]
+		c := string(r)
+		if c == "-" {
+			var prev, next string
+			if i > 0 {
+				prev = string(runes[i-1])
+			}
+			if i < len(runes)-2 {
+				next = string(runes[i+1])
+			}
+			if i == 0 || isOperator(prev) && next != "(" {
+				runes = append(runes[:i], append([]rune("(0"), runes[i:]...)...)
+				i += 2
+				pos := findNextOperator(runes, i+1)
+				runes = append(runes[:pos], append([]rune(")"), runes[pos:]...)...)
+				i = pos + 2
+				continue
+			} else if isOperator(prev) && next == "(" {
+				runes = append(runes[:i], append([]rune("(0"), runes[i:]...)...)
+				i += 2
+				pos := findMatchParenthesis(runes, i+1)
+				runes = append(runes[:pos], append([]rune(")"), runes[pos:]...)...)
+				i = pos + 2
+				continue
+			}
+		}
+		i++
+	}
+	return string(runes)
+}
 
-	//const (
-	//	operatorCharset = "+-*/%^"
-	//)
-	//
-	//func findNextOperator(r []rune, start int) int {
-	//	for i := start; i < len(r); i++ {
-	//	b := r[i]
-	//	if !unicode.IsDigit(b) {
-	//	return i
-	//}
-	//}
-	//	return len(r)
-	//}
-	//
-	//func main() {
-	//	a := "-1--2*-(3+4)"
-	//	//var sb strings.Builder
-	//	runes := []rune(a)
-	//	i := 0
-	//	for {
-	//		if i >= len(runes) {
-	//			break
-	//		}
-	//		r := runes[i]
-	//		c := string(r)
-	//		if c == "-" {
-	//			var prev, next string
-	//			if i > 0 {
-	//				prev = string(runes[i-1])
-	//			}
-	//			if i < len(runes)-2 {
-	//				next = string(runes[i+1])
-	//			}
-	//			if i == 0 || strings.Index(operatorCharset, prev) != -1 && next != "(" {
-	//				runes = append(runes[:i], append([]rune("(0"), runes[i:]...)...)
-	//				i += 2
-	//				pos := findNextOperator(runes, i+1)
-	//				runes = append(runes[:pos], append([]rune(")"), runes[pos:]...)...)
-	//				i = pos + 2
-	//				continue
-	//			} else if next == "(" {
-	//				// find match )
-	//			}
-	//		}
-	//		i++
-	//	}
-	//	fmt.Println("----------")
-	//	fmt.Println(string(runes))
-	//}
-
-	return s
+func stringToBigInt(num string) *big.Int {
+	n := new(big.Int)
+	n, ok := n.SetString(num, 10)
+	if !ok {
+		return big.NewInt(0)
+	} else {
+		return n
+	}
 }
 
 func tokenize(s string) ([]*Token, error) {
@@ -185,11 +207,10 @@ func tokenize(s string) ([]*Token, error) {
 
 		if sb.Len() != 0 {
 			origin := sb.String()
-			v, _ := strconv.ParseInt(origin, 10, 64)
 			token := &Token{
 				origin: origin,
 				Type:   TokenLiteral,
-				Value:  big.NewInt(v),
+				Value:  stringToBigInt(origin),
 			}
 			tokenList = append(tokenList, token)
 			sb.Reset()
@@ -245,6 +266,8 @@ func makeAbstractSyntaxTree(tokens []*Token) *ASTNode {
 				if top.IsOperator() && (t.Operator.Associativity() == AssociativityLeft && t.Operator.Precedence() <= top.Operator.Precedence()) || (t.Operator.Associativity() == AssociativityRight && t.Operator.Precedence() < top.Operator.Precedence()) {
 					outStack.AddNode(opStack.Pop())
 					top = opStack.Peek()
+				} else {
+					break
 				}
 			}
 			opStack.Push(t)

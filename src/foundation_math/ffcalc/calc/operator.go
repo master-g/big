@@ -48,8 +48,38 @@ func (op Operator) Precedence() int {
 	return opPrecMap[op]
 }
 
-func (op Operator) Eval(operand1, operand2 *big.Int) *big.Int {
-	if operand1 == nil || operand2 == nil {
+func mul(order, op1, op2 *big.Int) *big.Int {
+	r := big.NewInt(0)
+	r.Mul(op1, op2)
+	// r.Mod(r, order)
+	return r
+}
+
+func div(order, op1, op2 *big.Int) *big.Int {
+	// a/b = a*b^-1 = a*b^(order-2)
+	r := big.NewInt(0)
+	r.Sub(order, big.NewInt(2))
+	r.Exp(op2, r, nil)
+	r.Mul(op1, r)
+	// r.Mod(r, order)
+	return r
+}
+
+func exp(order, op1, op2 *big.Int) *big.Int {
+	r := big.NewInt(0)
+	if op2.Sign() < 0 {
+		// a^-b = 1/a^b
+		r.Abs(op2)
+		r.Exp(op1, r, nil)
+		return div(order, big.NewInt(1), r)
+	} else {
+		r.Exp(op1, op2, nil)
+		return r
+	}
+}
+
+func (op Operator) Eval(order, operand1, operand2 *big.Int) *big.Int {
+	if order == nil || operand1 == nil || operand2 == nil {
 		return nil
 	}
 
@@ -61,13 +91,13 @@ func (op Operator) Eval(operand1, operand2 *big.Int) *big.Int {
 	case OperatorSub:
 		result.Sub(operand1, operand2)
 	case OperatorMul:
-		result.Mul(operand1, operand2)
+		return mul(order, operand1, operand2)
 	case OperatorDiv:
-		result.Div(operand1, operand2)
+		return div(order, operand1, operand2)
 	case OperatorMod:
 		result.Mod(operand1, operand2)
 	case OperatorExp:
-		result.Exp(operand1, operand2, nil)
+		return exp(order, operand1, operand2)
 	}
 
 	return result

@@ -16,24 +16,36 @@ var (
 )
 
 func main() {
-	if len(os.Args) < 3 {
-		fmt.Println("Usage: ff [order] [exp] ...")
+	if len(os.Args) < 4 {
+		fmt.Println("Usage: ffcalc [prime] [power] [exp] ...")
 		os.Exit(1)
 	}
 
-	argOrder, err := strconv.ParseInt(os.Args[1], 10, 64)
+	argPrime, err := strconv.Atoi(os.Args[1])
 	if err != nil {
-		fmt.Printf("%v %v\n", ErrorInvalidFieldOrder, err)
+		fmt.Println("invalid prime number")
 		os.Exit(1)
 	}
-	order := big.NewInt(argOrder)
-	fmt.Println(order)
+	prime := big.NewInt(int64(argPrime))
+	if !prime.ProbablyPrime(64) {
+		fmt.Printf("%v is probably not a prime number\n", argPrime)
+		os.Exit(1)
+	}
+
+	argPower, err := strconv.Atoi(os.Args[2])
+	if err != nil {
+		fmt.Println("invalid power number")
+		os.Exit(1)
+	}
+	power := big.NewInt(int64(argPower))
+
+	order := prime.Exp(prime, power, nil)
 
 	var expression string
-	if len(os.Args) > 3 {
-		expression = strings.Join(os.Args[2:], "")
+	if len(os.Args) > 4 {
+		expression = strings.Join(os.Args[3:], "")
 	} else {
-		expression = os.Args[2]
+		expression = os.Args[3]
 	}
 	rpn, err := calc.Parse(expression)
 	if err != nil {
