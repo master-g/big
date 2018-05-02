@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/master-g/big/src/foundation_math/ffcalc/calc"
+	"github.com/master-g/big/foundation_math/ffcalc/calc"
 )
 
 var (
@@ -17,7 +17,7 @@ var (
 
 func main() {
 	if len(os.Args) < 4 {
-		fmt.Println("Usage: ffcalc [prime] [power] [exp] ...")
+		fmt.Println("Usage: ffcalc prime degree [exp...]")
 		os.Exit(1)
 	}
 
@@ -32,14 +32,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	argPower, err := strconv.Atoi(os.Args[2])
-	if err != nil {
-		fmt.Println("invalid power number")
+	argDegree, err := strconv.Atoi(os.Args[2])
+	if err != nil || argDegree < 0 {
+		fmt.Println("invalid degree number")
 		os.Exit(1)
 	}
-	power := big.NewInt(int64(argPower))
+	degree := big.NewInt(int64(argDegree))
 
-	order := prime.Exp(prime, power, nil)
+	order := prime.Exp(prime, degree, nil)
 
 	var expression string
 	if len(os.Args) > 4 {

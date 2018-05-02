@@ -8,9 +8,9 @@ type ASTNode struct {
 }
 
 // NewASTNode returns a new ASTNode
-func NewASTNode(t *Token, left, right *ASTNode) *ASTNode {
+func NewASTNode(token *Token, left, right *ASTNode) *ASTNode {
 	return &ASTNode{
-		Token: t,
+		Token: token,
 		Left:  left,
 		Right: right,
 	}
