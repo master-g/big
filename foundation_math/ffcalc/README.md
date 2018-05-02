@@ -1,7 +1,7 @@
 ffcalc
 ======
 
-ffcalc 包是一个学习性质的有限域计算器的 go 实现
+ffcalc 包是一个学习性质的有限域(模素数)计算器的 go 实现
 
 ## 安装与更新
 
@@ -12,17 +12,17 @@ $ go get -u github.com/master-g/big/src/foundation_math/ffcalc
 ## 使用
 
 ```bash
-$ ffcalc prime degree [exp...]
+$ ffcalc prime [exp...]
 ```
 
-其中`prime` 为有限域的素数, `degree` 为素数的正整数次幂, `exp` 为计算表达式 
+其中`prime` 为有限域的素数, `exp` 为计算表达式 
 
 例子
 
 ```bash
-$ ffcalc 19 1 "11+6"
+$ ffcalc 19 "11+6"
 17
-$ ffcalc 31 1 "4^-4*11"
+$ ffcalc 31 "4^-4*11"
 13
 ```
 

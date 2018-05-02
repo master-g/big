@@ -16,8 +16,8 @@ var (
 )
 
 func main() {
-	if len(os.Args) < 4 {
-		fmt.Println("Usage: ffcalc prime degree [exp...]")
+	if len(os.Args) < 3 {
+		fmt.Println("Usage: ffcalc prime [exp...]")
 		os.Exit(1)
 	}
 
@@ -32,27 +32,18 @@ func main() {
 		os.Exit(1)
 	}
 
-	argDegree, err := strconv.Atoi(os.Args[2])
-	if err != nil || argDegree < 0 {
-		fmt.Println("invalid degree number")
-		os.Exit(1)
-	}
-	degree := big.NewInt(int64(argDegree))
-
-	order := prime.Exp(prime, degree, nil)
-
 	var expression string
-	if len(os.Args) > 4 {
-		expression = strings.Join(os.Args[3:], "")
+	if len(os.Args) > 3 {
+		expression = strings.Join(os.Args[2:], "")
 	} else {
-		expression = os.Args[3]
+		expression = os.Args[2]
 	}
 	rpn, err := calc.Parse(expression)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	result, err := calc.Evaluate(rpn, order)
+	result, err := calc.Evaluate(rpn, prime)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
