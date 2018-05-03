@@ -1,11 +1,11 @@
 package geometry
 
 type Curve struct {
-	A int
-	B int
+	A float64
+	B float64
 }
 
-func NewCurve(a, b int) *Curve {
+func NewCurve(a, b float64) *Curve {
 	return &Curve{A: a, B: b}
 }
 
@@ -17,6 +17,13 @@ func (c *Curve) Add(p1, p2 *Point) *Point {
 	if p1 == nil || p2 == nil || p1.X == p2.X {
 		return nil
 	}
-	m := (p2.Y - p1.Y) / (p2.X - p1.X)
-	b := p1.Y - 2*p1.X
+	if !c.Has(p1) || !c.Has(p2) {
+		return nil
+	}
+	m := (p1.Y - p2.Y) / (p1.X - p2.X)
+	v := p1.Y - m*p1.X
+
+	x3 := m*m - p1.X - p2.X
+	y3 := m*x3 + v
+	return NewPoint(x3, -y3)
 }

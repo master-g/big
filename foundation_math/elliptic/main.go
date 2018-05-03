@@ -8,5 +8,7 @@ import (
 
 func main() {
 	c := geometry.NewCurve(5, 7)
-	fmt.Println(c.Has(geometry.NewPoint(2, 5)))
+	p1 := geometry.NewPoint(3, 7)
+	p2 := geometry.NewPoint(18, 77)
+	fmt.Println(c.Add(p1, p2))
 }
