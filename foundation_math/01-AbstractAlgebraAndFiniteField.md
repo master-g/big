@@ -135,8 +135,70 @@ a 除以 b，需要找到 b 的乘法逆元 (在这里又被称为数论倒数).
 
 ### 有限域 GF(2^m)
 
-GF(2^m) 在 [Reed-Solomon 编码](https://en.wikipedia.org/wiki/Reed%E2%80%93Solomon_error_correction)与椭圆曲线加密中都有应用  
+`GF(2^m)` 在 [Reed-Solomon 编码](https://en.wikipedia.org/wiki/Reed%E2%80%93Solomon_error_correction)与椭圆曲线加密中都有应用  
 
+`GF(2^m)` 的元素是二进制多项式, 即多项式的系数不是 1 就是 0, 域中一共有 2^m 个多项式, 每个多项式的最高次不超过 m-1.  
 
+例: `GF(2^3)` 包含 8 个元素, `{0, 1, x, x+1, x^2, x^2+1, x^2+x, x^2+x+1}`, `x+1` 实际上是 `0x^2+1x+1`, 则其可以表示为 `011`  
+
+### 加减法
+
+当模为 2 时
+
+> `1 + 1 = 2 mod 2 = 0`
+> `1 + 0 = 1 mod 2 = 1`
+> `0 + 0 = 0 mod 2 = 0`
+
+而模减法, 则有
+
+> `-1 = 0 - 1 = 0 + 1(-1 的加法逆元) = 1 mod 2 = 1`
+
+可知, 对于 `GF(2^m)` 上的模加减法, 均等价为异或运算
+
+例:
+
+> `(x^2 + x + 1) + (x + 1) = x^2 + 2x + 2` 而 2 mod 2 = 0, 结果为 `x^2`, 等价于
+> 111 xor 011 = 100, 100 就是 x^2 的 bit 字符串表示
+
+### 乘法
+
+二进制多项式乘法可以通过位移和异或计算得出  
+
+例: 对于 GF(2^3)  
+
+> `(x^2 + x + 1)*(x^2 + 1) = x^4 + x^3 + 2x^2 + x + 1 = x^4 + x^3 + x + 1`
+> `   111`
+> `x  101`
+> `------`
+> `   111`
+> `  0000`
+> ` 11100`
+> `------`
+> ` 11011`
+
+在 `GF(2^m)` 上, 当结果的度(degree) 超过 m-1 时, 需要将结果对一个不可约多项式进行取模运算.  
+
+这个运算可以通过位移和异或实现.  
+
+例如 `x^3 + x + 1` 是一个不可约多项式 (另一个是 `x^3 + x^2 + 1`), 记作 1011, 因为 11011 的度是 4 而 1011 的度是 3  
+
+则计算过程以将 1011 左移 1 位开始
+
+> `    11011`
+> `xor 10110`
+> `---------`
+> `    01101` 度仍然大于 m - 1 = 2, 但此时 1011 不需要再左移了
+> `xor 01011`
+> `---------`
+> `    00110`
+
+得 `111*101 = 11011 mod 1011 = 110 即 x^2 + x`
+
+### 除法
+
+除法依然是等效于乘以除数的倒数, 可以通过[扩展欧几里得算法](https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm)计算
 
 [ref](https://blog.csdn.net/qmickecs/article/details/77281602)
+[ref](https://www.doc.ic.ac.uk/~mrh/330tutor/ch04s04.html)
+[ref](https://engineering.purdue.edu/kak/compsec/NewLectures/Lecture7.pdf)
+[ref](https://en.wikipedia.org/wiki/Finite_field_arithmetic)
