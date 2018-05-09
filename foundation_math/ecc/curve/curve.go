@@ -94,21 +94,36 @@ func (c *Curve) Add(p1, p2 *Point) *Point {
 	return NewPoint(x3, y3)
 }
 
+func bits(n *big.Int) []uint {
+	bits := make([]uint, n.BitLen())
+	for i := 0; i < n.BitLen(); i++ {
+		bits[i] = n.Bit(i)
+	}
+	return bits
+}
+
 func (c *Curve) Mul(n *big.Int, p *Point) *Point {
-	one := big.NewInt(1)
-	// i = n
-	i := big.NewInt(0).Set(n)
+	if n.Sign() <= 0 {
+		return nil
+	}
+	if n.Cmp(big.NewInt(1)) == 0 {
+		return p.Copy()
+	}
+	bits := bits(n)
 	np := p.Copy()
-	for {
-		// i--
-		i.Sub(i, one)
-		if i.Sign() <= 0 {
-			break
+	var result *Point
+	for i := len(bits) - 1; i >= 0; i-- {
+		if bits[i] == 1 {
+			if result == nil {
+				result = np.Copy()
+			} else {
+				result = c.Add(result, np)
+			}
 		}
-		np = c.Add(np, p)
+		np = c.Add(np, np)
 	}
 
-	return np
+	return result
 }
 
 func (c *Curve) findN(p *Point, tries *big.Int) *big.Int {

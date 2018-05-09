@@ -23,7 +23,7 @@
 
 另外定义加法:
 
-> 任意取椭圆曲线上两点 P, Q (若 P, Q 两点重合, 则做 P 点切线)  
+> 任意取椭圆曲线上两点 P, Q (若 P, Q 两点重合, 则作 P 点切线)  
 > 过 P, Q 作直线与椭圆曲线相交于另一点 R'  
 > 过 R' 做 y 轴平行线与椭圆曲线交于 R 点  
 
@@ -40,13 +40,11 @@
 
 则此群是一个阿贝尔群  
 
-## secp256k1
+### secp256k1
 
 比特币使用的曲线名称是 `secp256k1`, 其方程式为 `y^2=x^3+7`  
 
 ![img](https://eng.paxos.com/hs-fs/hubfs/_02_Paxos_Engineering/Blockchain101-graphs-06.png?t=1524958561104&width=1280&name=Blockchain101-graphs-06.png)
-
-
 
 ## 参考
 
