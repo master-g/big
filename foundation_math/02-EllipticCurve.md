@@ -48,7 +48,7 @@
 
 ## 有限域上的椭圆曲线
 
-
+[here](http://andrea.corbellini.name/2015/05/23/elliptic-curve-cryptography-finite-fields-and-discrete-logarithms/)
 
 ## 参考
 
