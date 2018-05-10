@@ -40,15 +40,60 @@
 
 则此群是一个阿贝尔群  
 
-### secp256k1
-
-比特币使用的曲线名称是 `secp256k1`, 其方程式为 `y^2=x^3+7`  
-
-![img](https://eng.paxos.com/hs-fs/hubfs/_02_Paxos_Engineering/Blockchain101-graphs-06.png?t=1524958561104&width=1280&name=Blockchain101-graphs-06.png)
-
 ## 有限域上的椭圆曲线
 
-[here](http://andrea.corbellini.name/2015/05/23/elliptic-curve-cryptography-finite-fields-and-discrete-logarithms/)
+`{ (x, y) ∈ GF(p) | y^2 = x^3 + ax + b (mod p), 4a^3 + 27b^2 ≠ 0 (mod p) } ∪ {0}`  
+
+其中 0 是无穷远点; a, b 是 GF(p) 内的两个整数.  
+
+![img](http://andrea.corbellini.name/images/elliptic-curves-mod-p.png)
+
+曲线 `y^2=x^3-7x+10 (mod p), p=19,97,127,487` 的图像, 注意到对于每个 x 的值, 有对应的两个点, 且两点关于 `y = p/2` 对称  
+
+### 点加法  
+
+根据在实数域 `R` 上的加法, 如果椭圆曲线上的三点 P, Q, R 在同一直线 `ax + by + c = 0` 上, 可知 `P + Q + R = 0`  
+
+在 `GF(p)` 上有类似的定义, 只是增加了一个条件, 即如果在`GF(p)`上的椭圆曲线上有过同一直线 `ax + by + c = 0 (mod p)` 的三点 P, Q, R, 则 `P + Q + R = 0`  
+
+![img](http://andrea.corbellini.name/images/point-addition-mod-p.png)  
+
+图中在椭圆曲线 `y^2 = x^3 - x + 3 (mod 127)` 上的点 `P(16, 20)`, `Q(41, 120)` 构成直线 `y = 4x + 83 (mod 127)`. 注意直线在平面上重复的样式    
+
+同样的, 有限域上的椭圆曲线也是一个阿贝尔群, 满足以下性质:
+
+> 1. `Q + 0 = 0 + Q = Q`
+> 2. Q(xQ, yQ) 是曲线上的一个非 0 点, -Q = (xQ, -yQ mod p)
+> 3. P + (-P) = 0
+
+### 点的代数和
+
+曲线上有点 `P = (xP, yP)`, `Q = (xQ, yQ)` 可以计算出 `P + Q = -R`:  
+
+```plain
+    xR = (m^2 - xP - xQ) mod p
+    yR = [yP + m(xR - xP)] mod p
+       = [yQ + m(xR - xQ)] mod p
+       
+P ≠ Q:
+    m = (yP - yQ)(xP - xQ)^-1 mod p
+P = Q:
+    m = (3xP^2 + a)(2yP)^-1 mod p
+```
+
+### 有限域椭圆曲线群的阶  
+
+有限域椭圆曲线群的阶就是曲线上所有点的个数, 我们可以通过计算 x = 0 到 x = p -1 对应的所有点来得到这个阶  
+
+然而这种计算方式的复杂度是 `O(p)`, 而比特币使用的 secp256k1 曲线的 p 是 `2^256 - 2^32 - 977`  
+
+另外一种更迅速的计算方式是使用 [Schoof 算法](https://en.wikipedia.org/wiki/Schoof%27s_algorithm)  
+
+### 标量乘法与循环子群  
+
+
+
+
 
 ## 参考
 
