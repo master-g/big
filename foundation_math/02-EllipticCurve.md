@@ -81,6 +81,12 @@ P = Q:
     m = (3xP^2 + a)(2yP)^-1 mod p
 ```
 
+### 标量乘法
+
+`nP = P + P + ... + P, 其中 n 是自然数`  
+
+  
+
 ### 有限域椭圆曲线群的阶  
 
 有限域椭圆曲线群的阶就是曲线上所有点的个数, 我们可以通过计算 x = 0 到 x = p -1 对应的所有点来得到这个阶  
@@ -89,7 +95,10 @@ P = Q:
 
 另外一种更迅速的计算方式是使用 [Schoof 算法](https://en.wikipedia.org/wiki/Schoof%27s_algorithm)  
 
-### 标量乘法与循环子群  
+[实现](https://libraries.docs.miracl.com/miracl-user-manual/example-progs)  
+[MIRACL](https://github.com/miracl/MIRACL)  
+
+### 循环子群  
 
 
 
