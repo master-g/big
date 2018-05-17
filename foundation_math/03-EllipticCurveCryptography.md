@@ -15,9 +15,13 @@
 
 ## 随机曲线
 
+上一篇文章的结尾我们介绍了椭圆曲线上的对数问题, 以及一些特定的曲线容易受到攻击, 那么我们有没有办法确定一个椭圆曲线是"安全"的呢?  
+
+为了解决这类问题, 我们经常需要引入一个新的域参数: 用来生成椭圆曲线系数 `a`, `b` 和/或基点 `G` 的随机数种子(seed) **`S`**.  
 
 
-[ref](https://eng.paxos.com/blockchain-101-elliptic-curve-cryptography)  
+
+[ref](hhttp://andrea.corbellini.name/2015/05/30/elliptic-curve-cryptography-ecdh-and-ecdsa/)  
 [计算](https://en.wikipedia.org/wiki/Elliptic_curve_point_multiplication)
 
 1. 有限域上的椭圆曲线计算  

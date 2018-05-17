@@ -297,7 +297,11 @@ a ≡ g^μ (mod n)
 
 这个问题被认为在传统计算机上很难在多项式时间(polynomial time)内解决, 虽然没有严格的数学证明其是 NP-hard 问题.  
 
-类似的, 在数字签名算法 (DSA), 秘钥交换算法 (Diffie-Hellman) 和 ElGamal 加密算法中也利用了离散对数原理  
+类似的, 在数字签名算法 (DSA), 秘钥交换算法 (Diffie-Hellman) 和 ElGamal 加密算法中也利用了离散对数原理.  
+
+不过并不是所有的椭圆曲线上的离散对数问题都是"困难"的, 一些特定的椭圆曲线无法应对攻击, 比如满足 `p = hn` 的椭圆曲线.  
+
+这类曲线的有限域的阶等于其自身的阶, 容易受到 [smart attack](https://wstein.org/edu/2010/414/projects/novotney.pdf) 攻击  
 
 ## 参考
 
