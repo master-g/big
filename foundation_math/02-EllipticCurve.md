@@ -254,8 +254,7 @@ func DoubleAndAdd(n uint, x int) int {
 > 对于正整数 `n`, 欧拉函数 `φ(n)` 是小于 `n` 的正整数中与 `n` 互质的数的个数
 
 #### 原根 Primitive root
-
-[Wiki 上关于原根比较详细的介绍](https://en.wikipedia.org/wiki/Primitive_root_modulo_n)   
+ 
 [MathWorld 原根](http://mathworld.wolfram.com/PrimitiveRoot.html)  
 
 在数论, 尤其是整除理论中, 原根是一个很重要的概念  
@@ -285,13 +284,20 @@ func DoubleAndAdd(n uint, x int) int {
 
 回到**离散对数**  
 
-[MathWorld 上精确的描述](http://mathworld.wolfram.com/DiscreteLogarithm.html)  
-[MathWorld 欧拉函数](http://mathworld.wolfram.com/TotientFunction.html)  
+[MathWorld 上关于离散对数的描述](http://mathworld.wolfram.com/DiscreteLogarithm.html)  
 
 如果 a 是一个与整数 n 互质的任意整数, 且 g 是 n 的一个原根, 则在 0, 1, 2, ..., φ(n)-1 中存在一个整数 μ, 使得
 a ≡ g^μ (mod n)  
 则 μ 是 a 以整数 g 为底(base), 模 n 的指数(index)或离散对数值(discrete logarithm)
-记 μ = ind g a(mod n)
+记 μ = Ind g a(mod n)
+
+### 椭圆曲线上的离散对数问题
+
+有椭圆曲线 `E(Fq)`, 上有不同的两点 `Q` 和 `P`, 椭圆曲线离散对数问题就是找到一个整数 `n`, 使得 `nP = Q`  
+
+这个问题被认为在传统计算机上很难在多项式时间(polynomial time)内解决, 虽然没有严格的数学证明其是 NP-hard 问题.  
+
+类似的, 在数字签名算法 (DSA), 秘钥交换算法 (Diffie-Hellman) 和 ElGamal 加密算法中也利用了离散对数原理  
 
 ## 参考
 
