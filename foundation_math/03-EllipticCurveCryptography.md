@@ -315,8 +315,3 @@ verify: 	true
 
 [ref](http://andrea.corbellini.name/2015/05/30/elliptic-curve-cryptography-ecdh-and-ecdsa/)    
 [计算](https://en.wikipedia.org/wiki/Elliptic_curve_point_multiplication)  
-[DSA](https://www.instantssl.com/https-tutorials/digital-signature.html)  
-
-1. 有限域上的椭圆曲线计算  
-2. secp256k1 曲线  
-3. 加密应用  
