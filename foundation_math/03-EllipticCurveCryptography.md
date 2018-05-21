@@ -309,9 +309,10 @@ verify: 	true
 
 `s = k^-1 * (z + r * dS) mod n → dS = r^-1 * (s * k - z) mod n`  
 
-如果 `k` 的规律能够预测, 利用类似的方式也能够破解出私钥.   
+如果 `k` 的规律能够预测, 利用类似的方式也能够破解出私钥.  
 
 ## Reference
 
 [ref](http://andrea.corbellini.name/2015/05/30/elliptic-curve-cryptography-ecdh-and-ecdsa/)    
 [计算](https://en.wikipedia.org/wiki/Elliptic_curve_point_multiplication)  
+[衍生阅读](http://andrea.corbellini.name/2015/06/08/elliptic-curve-cryptography-breaking-security-and-a-comparison-with-rsa/)  
