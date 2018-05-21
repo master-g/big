@@ -106,10 +106,102 @@ ECDH 算法解决了以下问题: 如何在两个组织[Alice 和 Bob](https://e
 * `n  = 0xFFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFE BAAEDCE6 AF48A03B BFD25E8C D0364141`
 * `h  = 1`
 
-TODO: make a ECDH example here  
+利用 bitcoin 的 [golang 实现](github.com/btcsuite/btcd/btcec) 的一个例子:  
 
-[ref](http://andrea.corbellini.name/2015/05/30/elliptic-curve-cryptography-ecdh-and-ecdsa/)  
-[计算](https://en.wikipedia.org/wiki/Elliptic_curve_point_multiplication)
+```go
+// Elliptic curve
+secp256k1 := btcec.S256()
+// Alice
+alicePrivate, _ := btcec.NewPrivateKey(secp256k1)
+alicePublic := alicePrivate.PubKey()
+// Bob
+bobPrivate, _ := btcec.NewPrivateKey(secp256k1)
+bobPublic := bobPrivate.PubKey()
+// Shared secret
+aliceS := btcec.GenerateSharedSecret(alicePrivate, bobPublic)
+bobS := btcec.GenerateSharedSecret(bobPrivate, alicePublic)
+// Results
+fmt.Printf("%v: \t%v\n", "Alice's private key",
+    hex.EncodeToString(alicePrivate.Serialize()))
+fmt.Printf("%v: \t%v\n", "Alice's public key",
+    hex.EncodeToString(alicePublic.SerializeUncompressed()))
+fmt.Printf("%v: \t%v\n", "Bob's private key",
+    hex.EncodeToString(bobPrivate.Serialize()))
+fmt.Printf("%v: \t%v\n", "Bob's public key",
+    hex.EncodeToString(bobPublic.SerializeUncompressed()))
+fmt.Printf("%v: \t%v\n", "Alice's shared secret",
+    hex.EncodeToString(aliceS))
+fmt.Printf("%v: \t%v\n", "Bob's shared secret",
+    hex.EncodeToString(bobS))
+```
+
+运行结果:  
+
+```plain
+Alice's private key: 	8af8ecb29bf44bde480d0443b2b947c8562bd6d64aab250598005a76c55a3af4
+Alice's public key: 	04a9fb6132598f8c8497cd8e3e144bea2d2cac8ba756e82336d9a86b0c071801367a66e8f3b646c76abe62131604b4b5c0f8c554123e2f1bae85f80e7777880628
+Bob's private key: 	86d5f498aea0bd79d2ad3a3c81914a73ab182c1dc81fe28c6dbb7b5f30aa2212
+Bob's public key: 	04d66e61b2b486170f1f8e04c9068422f18b8814b168a531145ab5e702b0610612139b4b094315d18acac9e5a4eb0a77a3edfeaeeca0b14973f517c15ea8728f62
+Alice's shared secret: 	d0e2539d2c003a5d08810b00b9218e955a3e486b637d3c3cb736cdc131ada8ff
+Bob's shared secret: 	d0e2539d2c003a5d08810b00b9218e955a3e486b637d3c3cb736cdc131ada8ff
+```
+
+## ECDSA 签名 Elliptic Curve Digital Signature Algorithm
+
+简单来说, 数字签名的目的是用于保障消息的完整性, 确认消息发送者的身份, 其原理可以简单介绍如下:  
+
+![img](https://www.instantssl.com/images/digital-signature.png)  
+
+1. Alice 需要向 Bob 发送消息 `M`
+2. Alice 计算出 `M` 的一个哈希值 `H`, 然后使用自己的私钥 `p` 对 `H` 进行加密, 得到签名 `S`
+3. Alice 将 `M` 和签名 `S` 一并发送给 Bob
+4. Bob 使用 Alice 的公钥对 `S` 进行解密得到 `H`, 并对 `M` 计算哈希值, 然后进行比较
+5. 如果 Bob 计算出来的哈希值与解密得到的哈希值不一致, 则其收到的消息可能被篡改或来自其他人
+
+例子:  
+
+```go
+// elliptic curve
+secp256k1 := btcec.S256()
+// Alice generate key pair
+privateKey, _ := btcec.NewPrivateKey(secp256k1)
+publicKey := privateKey.PubKey()
+fmt.Printf("private: \t%v\n", hex.EncodeToString(privateKey.Serialize()))
+fmt.Printf("public: \t%v\n", hex.EncodeToString(publicKey.SerializeUncompressed()))
+// msg
+msg := "hello"
+if len(os.Args) >= 2 {
+    msg = os.Args[1]
+}
+fmt.Printf("message: \t%v\n", msg)
+// hash of the msg
+hash := sha256.Sum256([]byte(msg))
+fmt.Printf("sha256: \t%v\n", hex.EncodeToString(hash[:]))
+// sign hash with private key
+sign, _ := privateKey.Sign(hash[:])
+fmt.Printf("signature: \t%v\n", hex.EncodeToString(sign.Serialize()))
+// Alice send msg and signature to Bob
+sign2, _ := btcec.ParseSignature(sign.Serialize(), secp256k1)
+// Bob decrypted the hash and verify the msg
+fmt.Printf("verify: \t%v\n", sign2.Verify(hash[:], publicKey))
+```
+
+运行程序, 得到:  
+
+```plain
+private: 	f749dcb7fa12189d4889eebba0f4de7613bfd34328c71ae107006395c06bb2d5
+public: 	04366a20ae12942966d11c0ca80da84f3babf0f662d2d19acd53cb02baeca939420909b5015dce41b85a48013c936d74676105f08dcb9e32fd221a07c0643087c4
+message: 	hello
+sha256: 	2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824
+signature: 	304402203f09ebc9c2123c702ea70a77edf3c474b0e5a46cb871db4e6ce2c145bbfe8c6802207343187521667883381f0c16726abab8640bf3ff6d4b82bb60aa6c25db5173ba
+verify: 	true
+```
+
+## Reference
+
+[ref](http://andrea.corbellini.name/2015/05/30/elliptic-curve-cryptography-ecdh-and-ecdsa/)    
+[计算](https://en.wikipedia.org/wiki/Elliptic_curve_point_multiplication)  
+[DSA](https://www.instantssl.com/https-tutorials/digital-signature.html)  
 
 1. 有限域上的椭圆曲线计算  
 2. secp256k1 曲线  
