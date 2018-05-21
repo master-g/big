@@ -27,7 +27,7 @@
 
 而试图通过 `a` 和 `b` 反向推出 `S` 却非常困难  
 
-种子数的选取应当遵循 (nothing up my sleeve)[https://en.wikipedia.org/wiki/Nothing_up_my_sleeve_number] 原则.  
+种子数的选取应当遵循 [nothing up my sleeve](https://en.wikipedia.org/wiki/Nothing_up_my_sleeve_number) 原则.  
 
 ## 椭圆曲线加密
 
